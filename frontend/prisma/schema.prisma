@@ -75,7 +75,7 @@ model Repository {
 
 model PullRequest {
   id           String     @id @default(cuid())
-  githubId     BigInt
+  githubId      BigInt
   number       Int
   title        String
   repositoryId String
