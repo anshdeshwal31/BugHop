@@ -13,7 +13,7 @@ export async function GET() {
 
     const stats = await getDashboardStats(userId)
 
-    const { user, installation, repositories, totalPRs, totalIssues, prsByDate, issuesByDate } = stats
+    const { user, installation, repositories, totalPRs, totalIssues, prsByDate, issuesByDate } = stats as any
     const chartData = buildChartData(prsByDate, issuesByDate)
 
     return NextResponse.json({
@@ -41,6 +41,6 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       { error: "internal server used" },
-      { status: 500 },
+      { status: 500 })
   }
 }
