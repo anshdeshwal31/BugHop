@@ -25,33 +25,33 @@ async def review_pull_request(
         Make sure to check for violations of these rules and flag them in your review.
         """
 
-        prompt = f"""You are a code reviewer. Review this pull request and provide helpful feedback.
+    prompt = f"""You are a code reviewer. Review this pull request and provide helpful feedback.
 
-        PR Title: {title}
-        PR Description: {description or "No description provided"}
+    PR Title: {title}
+    PR Description: {description or "No description provided"}
 
-        Files changed: {", ".join(files_changed)}
-        {rules_section}
-        Code changes (diff):
-        {diff}
+    Files changed: {", ".join(files_changed)}
+    {rules_section}
+    Code changes (diff):
+    {diff}
 
-        Related code from the codebase for context:
-        {related_code}
+    Related code from the codebase for context:
+    {related_code}
 
-        Please provide a constructive code review comment. Focus on:
-        - Potential bugs or issues
-        - Code quality and best practices
-        - Security concerns if any
-        - Suggestions for improvement
-        {f"- Violations of the team's custom rules listed above" if custom_rules else ""}
+    Please provide a constructive code review comment. Focus on:
+    - Potential bugs or issues
+    - Code quality and best practices
+    - Security concerns if any
+    - Suggestions for improvement
+    {f"- Violations of the team's custom rules listed above" if custom_rules else ""}
 
-        Be concise and helpful."""
+    Be concise and helpful."""
 
-        response = client.chat.completions.create(
-            model=MODEL, messages=[{"role": "user", "content": prompt}]
-        )
-        result = response.choices[0].message.content
-        return result
+    response = client.chat.completions.create(
+        model=MODEL, messages=[{"role": "user", "content": prompt}]
+    )
+    result = response.choices[0].message.content
+    return result
 
 
 async def help_with_issue(title, description, related_code, custom_rules):
@@ -69,27 +69,27 @@ async def help_with_issue(title, description, related_code, custom_rules):
         Keep these in mind when suggesting solutions.
         """
 
-        prompt = f"""You are a helpful assistant that helps developers solve issues.
+    prompt = f"""You are a helpful assistant that helps developers solve issues.
 
-        Issue Title: {title}
-        Issue Description: {description or "No description provided"}
-        {rules_section}
-        Related code from the codebase:
-        {related_code}
+    Issue Title: {title}
+    Issue Description: {description or "No description provided"}
+    {rules_section}
+    Related code from the codebase:
+    {related_code}
 
-        Please provide a helpful comment that:
-        - Identifies which files might need to be modified
-        - Suggests a potential approach to solve this issue
-        - Points out any relevant code patterns in the codebase
-        {f"- Ensure suggestions follow the team's coding guidelines listed above" if custom_rules else ""}
+    Please provide a helpful comment that:
+    - Identifies which files might need to be modified
+    - Suggests a potential approach to solve this issue
+    - Points out any relevant code patterns in the codebase
+    {f"- Ensure suggestions follow the team's coding guidelines listed above" if custom_rules else ""}
 
-        Be concise and actionable."""
+    Be concise and actionable."""
 
-        response = client.chat.completions.create(
-            model=MODEL, messages=[{"role": "user", "content": prompt}]
-        )
-        result = response.choices[0].message.content
-        return result
+    response = client.chat.completions.create(
+        model=MODEL, messages=[{"role": "user", "content": prompt}]
+    )
+    result = response.choices[0].message.content
+    return result
 
 
 async def chat_with_repo(question, code_context):
@@ -136,48 +136,46 @@ async def plan_issues_fix(
         rules_list = "\n".join(lines)
         rules_section = f"\nCoding guidelines to follow:\n{rules_list}\n"
 
-        prompt = f"""You are a senior software engineer. Analyze this issue and plan the minimal code changes needed to fix it.
+    prompt = f"""You are a senior software engineer. Analyze this issue and plan the minimal code changes needed to fix it.
 
-        ISSUE TITLE: {issue_title}
+    ISSUE TITLE: {issue_title}
 
-        ISSUE DESCRIPTION:
-        {issue_body or "No description provided"}
-        {rules_section}
-        RELATED CODE SNIPPETS (from codebase search):
-        {related_code}
+    ISSUE DESCRIPTION:
+    {issue_body or "No description provided"}
+    {rules_section}
+    RELATED CODE SNIPPETS (from codebase search):
+    {related_code}
 
-        FULL FILE CONTENTS (files that might need changes):
-        {files_section}
+    FULL FILE CONTENTS (files that might need changes):
+    {files_section}
 
-        Based on the issue and code, output a JSON plan with this exact structure:
-        {{
-            "summary": "One sentence describing the fix",
-            "files": [
-                {{
-                    "path": "path/to/file.ext",
-                    "action": "modify",
-                    "description": "What specific change to make"
-                }}
-            ],
-            "approach": "2-3 sentences explaining the implementation approach"
-        }}
+    Based on the issue and code, output a JSON plan with this exact structure:
+    {{
+        "summary": "One sentence describing the fix",
+        "files": [
+            {{
+                "path": "path/to/file.ext",
+                "action": "modify",
+                "description": "What specific change to make"
+            }}
+        ],
+        "approach": "2-3 sentences explaining the implementation approach"
+    }}
 
-        Rules:
-        - action must be one of: "create", "modify", "delete"
-        - Only include files that ACTUALLY need changes
-        - Be specific in descriptions (e.g., "Change 'username' to 'User' on line 45")
-        - For new files, describe what the file should contain
-        - Be conservative - minimal changes only
+    Rules:
+    - action must be one of: "create", "modify", "delete"
+    - Only include files that ACTUALLY need changes
+    - Be specific in descriptions (e.g., "Change 'username' to 'User' on line 45")
+    - For new files, describe what the file should contain
+    - Be conservative - minimal changes only
 
-        Output ONLY valid JSON, no markdown or explanation."""
+    Output ONLY valid JSON, no markdown or explanation."""
 
-        response = client.chat.completions.create(
-            model=MODEL, messages=[{"role": "user", "content": prompt}], temperature=0.2
-        )
-        result = response.choices[0].message.content
-        return result
-        plan = json.loads(result)
-        return plan
+    response = client.chat.completions.create(
+        model=MODEL, messages=[{"role": "user", "content": prompt}], temperature=0.2
+    )
+    result = response.choices[0].message.content
+    return json.loads(result)
 
 
 async def generate_file_change(

@@ -19,7 +19,7 @@ COLLECTION_NAME = "coderabbit6767"
 def init_collection():
     try:
         client.create_collection(
-            collection_name="COLLECTION_NAME",
+            collection_name=COLLECTION_NAME,
             vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
         )
     except Exception:

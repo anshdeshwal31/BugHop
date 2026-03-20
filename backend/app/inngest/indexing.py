@@ -8,6 +8,11 @@ from app.services.chunker import chunk_code, create_chunk_text_for_embedding
 from app.services.frontend import update_indexing_status
 
 
+def make_chunk_id(repo_full_name: str, file_path: str, start_line: int, end_line: int) -> str:
+    source = f"{repo_full_name}:{file_path}:{start_line}:{end_line}"
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+
 @inngest_client.create_function(
     fn_id="handle_installation",
     trigger=inngest.TriggerEvent(event="installation/created"),
@@ -47,7 +52,7 @@ async def handle_installation(ctx: inngest.Context):
                     "repo": repo_full_name,
                     "path": chunk.file_path,
                     "content": chunk.content,
-                    "chunk_type": chunk.name,
+                    "chunk_type": chunk.chunk_type,
                     "name": chunk.name,
                     "language": chunk.language,
                     "start_line": chunk.start_line,

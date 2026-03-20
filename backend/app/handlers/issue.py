@@ -45,7 +45,7 @@ async def handle_issue(payload):
             desc_embeddings, limit=5, repo=repo_full_name
         )
 
-        for point in title_results:
+        for point in desc_results:
             payload_data = point.payload
             path = payload_data.get("path", "")
             if path and path not in seen_paths:
@@ -59,7 +59,7 @@ async def handle_issue(payload):
 
                 related_code += f"\n-- {header} ---\n{content}\n"
                 seen_paths.add(path)
-    custom_rules = await fetch_customer_rules(installation_id)
+    custom_rules = await fetch_custom_rules(installation_id)
 
     comment = await llm.help_with_issue(
         title=title,

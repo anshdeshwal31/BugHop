@@ -59,9 +59,11 @@ def chunk_code(code, file_path):
 
     try:
         lang = LANGUAGES.get(language)
+        if not lang:
+            raise ValueError("Language parser is not configured")
         parser = Parser(lang)
-        tree = parser.parse(code.encode("uts-8"))
-    except Exception as e:
+        tree = parser.parse(code.encode("utf-8"))
+    except Exception:
         return [
             CodeChunk(
                 content=code,
@@ -80,9 +82,8 @@ def chunk_code(code, file_path):
     chunks = []
 
     def walk_tree(node):
-
         if node.type in function_types:
-            chunks.append[
+            chunks.append(
                 CodeChunk(
                     content=get_node_code(node, code),
                     chunk_type="function",
@@ -92,9 +93,9 @@ def chunk_code(code, file_path):
                     end_line=node.end_point[0] + 1,
                     language=language,
                 )
-            ]
+            )
         elif node.type in class_types:
-            chunks.append[
+            chunks.append(
                 CodeChunk(
                     content=get_node_code(node, code),
                     chunk_type="class",
@@ -104,26 +105,27 @@ def chunk_code(code, file_path):
                     end_line=node.end_point[0] + 1,
                     language=language,
                 )
-            ]
+            )
+
         for child in node.children:
             walk_tree(child)
 
-        walk_tree(tree.root_node)
+    walk_tree(tree.root_node)
 
-        if not chunks:
-            chunks.append[
-                CodeChunk(
-                    content=code,
-                    chunk_type="file",
-                    name=file_path.split("/")[-1],
-                    file_path=file_path,
-                    start_line=1,
-                    end_line=code.count("\n") + 1,
-                    language=language,
-                )
-            ]
+    if not chunks:
+        chunks.append(
+            CodeChunk(
+                content=code,
+                chunk_type="file",
+                name=file_path.split("/")[-1],
+                file_path=file_path,
+                start_line=1,
+                end_line=code.count("\n") + 1,
+                language=language,
+            )
+        )
 
-        return chunks
+    return chunks
 
 
 def create_chunk_text_for_embedding(chunk):

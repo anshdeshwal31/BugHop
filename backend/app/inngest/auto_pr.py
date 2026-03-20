@@ -1,3 +1,5 @@
+import json
+
 import inngest
 
 from app.inngest.client import inngest_client
@@ -53,13 +55,16 @@ async def handle_auto_pr(ctx: inngest.Context):
 
     custom_rules = await fetch_custom_rules(installation_id)
 
-    plan = await llm.plan_issue_fix(
+    plan = await llm.plan_issues_fix(
         issue_title=issue_title,
         issue_body=issue_body,
         related_code=related_code,
         file_contents=file_contents,
         custom_rules=custom_rules,
     )
+
+    if isinstance(plan, str):
+        plan = json.loads(plan)
 
     changes = []
     for file_plan in plan["files"]:
@@ -73,6 +78,8 @@ async def handle_auto_pr(ctx: inngest.Context):
             file_data = await github.get_file_content(
                 owner, repo_name, file_path, token
             )
+            current_content = file_data["content"]
+            file_shas[file_path] = file_data["sha"]
 
         new_content = await llm.generate_file_change(
             file_path=file_path,

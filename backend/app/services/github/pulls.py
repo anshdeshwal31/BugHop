@@ -6,7 +6,7 @@ from app.services.github.client import github_request
 async def get_pr_diff(owner, repo, pr_number, token):
     resp = await github_request(
         "GET",
-        f"/repos/{owner}/pulls/{pr_number}",
+        f"/repos/{owner}/{repo}/pulls/{pr_number}",
         token,
         accept="application/vnd.github.v3.diff",
     )
@@ -16,12 +16,11 @@ async def get_pr_diff(owner, repo, pr_number, token):
 async def get_pr_files(owner, repo, pr_number, token):
     resp = await github_request(
         "GET",
-        f"/repos/{owner}/pulls/{pr_number}/files",
+        f"/repos/{owner}/{repo}/pulls/{pr_number}/files",
         token,
     )
     files = resp.json()
-    filenames = [f["filename"] for f in files]
-    return filenames
+    return [f["filename"] for f in files]
 
 
 async def post_comment(owner, repo, issue_number, comment, token):
@@ -37,7 +36,7 @@ async def post_comment(owner, repo, issue_number, comment, token):
 async def create_branch(owner, repo, branch_name, from_ref, token):
     resp = await github_request(
         "GET",
-        f"/repos/{owner}/{repo}/git/ref/heads{from_ref}",
+        f"/repos/{owner}/{repo}/git/ref/heads/{from_ref}",
         token,
     )
     sha = resp.json()["object"]["sha"]
@@ -52,20 +51,23 @@ async def create_branch(owner, repo, branch_name, from_ref, token):
 
 
 async def create_or_update_file(
-    owner, repo, path, content, message, branch, token, sha
+    owner, repo, path, content, message, branch, sha, token
 ):
     body = {
         "message": message,
         "content": base64.b64encode(content.encode("utf-8")).decode("utf-8"),
         "branch": branch,
     }
+    if sha:
+        body["sha"] = sha
+
     resp = await github_request(
-        "PUT", f"/repo{owner}/{repo}/contents/{path}", token, json=body
+        "PUT", f"/repos/{owner}/{repo}/contents/{path}", token, json=body
     )
     return resp.json()
 
 
-async def delete_file(owner, repo, path, message, branch, token, sha):
+async def delete_file(owner, repo, path, message, branch, sha, token):
     resp = await github_request(
         "DELETE",
         f"/repos/{owner}/{repo}/contents/{path}",

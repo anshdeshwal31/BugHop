@@ -142,9 +142,10 @@ async def get_repo_files(owner, repo, token):
     return files
 
 
-async def get_file_content(owner, repo, path, token, ref):
+async def get_file_content(owner, repo, path, token, ref=None):
+    params = {"ref": ref} if ref else None
     resp = await github_request(
-        "GET", f"/repos/{owner}/{repo}/contents/{path}", token, params={"ref": ref}
+        "GET", f"/repos/{owner}/{repo}/contents/{path}", token, params=params
     )
     data = resp.json()
     content = base64.b64decode(data["content"]).decode("utf-8")

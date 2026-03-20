@@ -51,4 +51,4 @@ async def handle_pull_request(payload):
 
     pr_github_id = pr.get("id", 0)
 
-    await log_pr_review(f"{owner / repo_name}", pr_number, title, pr_github_id)
+    await log_pr_review(f"{owner}/{repo_name}", pr_number, title, pr_github_id)
