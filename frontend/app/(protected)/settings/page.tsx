@@ -11,6 +11,11 @@ import { GithubCard } from "./_components/github-card";
 import { SystemStatusCard } from "./_components/system-status-card";
 import SettingsLoading from "./loading";
 
+type ServiceStatus = {
+  status?: string;
+  detail?: string;
+};
+
 export default function SettingsPage() {
   const { isSignedIn, isLoaded } = useAuthRedirect();
   const { user } = useUser();
@@ -23,6 +28,7 @@ export default function SettingsPage() {
   >("online");
 
   const [uptime, setUptime] = useState<number | null>(null);
+  const [services, setServices] = useState<Record<string, ServiceStatus>>({});
 
   useEffect(() => {
     const fetchRepo = async () => {
@@ -51,6 +57,9 @@ export default function SettingsPage() {
         setBackendStatus(data.status || "offline");
         if (data.uptime != null) {
           setUptime(data.uptime);
+        }
+        if (data.services && typeof data.services === "object") {
+          setServices(data.services);
         }
       } catch {
         setBackendStatus("offline");
@@ -113,7 +122,11 @@ export default function SettingsPage() {
       />
 
       <GithubCard repoName={repoName} indexingStatus={indexingStatus} />
-      <SystemStatusCard backendStatus={backendStatus} uptime={ uptime} />
+      <SystemStatusCard
+        backendStatus={backendStatus}
+        uptime={uptime}
+        services={services}
+      />
     </div>
   );
 }
