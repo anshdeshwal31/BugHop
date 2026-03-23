@@ -15,7 +15,6 @@
     "@liveblocks/react": "^3.14.0",
     "@liveblocks/react-ui": "^3.14.0",
     "@octokit/webhooks": "^14.2.0",
-    "@polar-sh/nextjs": "^0.9.3",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "@tanstack/react-table": "^8.21.3",

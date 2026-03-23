@@ -1,12 +1,58 @@
 import json
+import re
 
-from openai import OpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.core.config import settings
 
-client = OpenAI(api_key=settings.openai_api_key)
-
 MODEL = settings.llm_model
+llm = ChatGoogleGenerativeAI(
+    model=MODEL,
+    temperature=0.2,
+    max_retries=2,
+    google_api_key=settings.google_api_key,
+)
+
+
+def _extract_text(response):
+    text = getattr(response, "text", None)
+    if isinstance(text, str) and text:
+        return text
+
+    content = getattr(response, "content", "")
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        chunks = []
+        for block in content:
+            if isinstance(block, dict) and isinstance(block.get("text"), str):
+                chunks.append(block["text"])
+        if chunks:
+            return "\n".join(chunks)
+
+    return str(content)
+
+
+async def _invoke_text(prompt, temperature=0.2):
+    model = llm
+    if temperature != 0.2:
+        model = ChatGoogleGenerativeAI(
+            model=MODEL,
+            temperature=temperature,
+            max_retries=2,
+            google_api_key=settings.google_api_key,
+        )
+
+    response = await model.ainvoke(prompt)
+    return _extract_text(response)
+
+
+def _clean_json_response(content: str) -> str:
+    stripped = content.strip()
+    stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
+    stripped = re.sub(r"\s*```$", "", stripped)
+    return stripped
 
 
 async def review_pull_request(
@@ -47,11 +93,7 @@ async def review_pull_request(
 
     Be concise and helpful."""
 
-    response = client.chat.completions.create(
-        model=MODEL, messages=[{"role": "user", "content": prompt}]
-    )
-    result = response.choices[0].message.content
-    return result
+    return await _invoke_text(prompt)
 
 
 async def help_with_issue(title, description, related_code, custom_rules):
@@ -85,11 +127,7 @@ async def help_with_issue(title, description, related_code, custom_rules):
 
     Be concise and actionable."""
 
-    response = client.chat.completions.create(
-        model=MODEL, messages=[{"role": "user", "content": prompt}]
-    )
-    result = response.choices[0].message.content
-    return result
+    return await _invoke_text(prompt)
 
 
 async def chat_with_repo(question, code_context):
@@ -106,11 +144,7 @@ async def chat_with_repo(question, code_context):
 
     Be concise and specific in your answer."""
 
-    response = client.chat.completions.create(
-        model=MODEL, messages=[{"role": "user", "content": prompt}]
-    )
-    result = response.choices[0].message.content
-    return result
+    return await _invoke_text(prompt)
 
 
 async def plan_issues_fix(
@@ -171,11 +205,8 @@ async def plan_issues_fix(
 
     Output ONLY valid JSON, no markdown or explanation."""
 
-    response = client.chat.completions.create(
-        model=MODEL, messages=[{"role": "user", "content": prompt}], temperature=0.2
-    )
-    result = response.choices[0].message.content
-    return json.loads(result)
+    result = await _invoke_text(prompt, temperature=0.2)
+    return json.loads(_clean_json_response(result))
 
 
 async def generate_file_change(
@@ -231,8 +262,4 @@ Just output the raw file content."""
     else:
         return ""
 
-    response = client.chat.completions.create(
-        model=MODEL, messages=[{"role": "user", "content": prompt}], temperature=0.2
-    )
-    result = response.choices[0].message.content
-    return result
+    return await _invoke_text(prompt, temperature=0.2)

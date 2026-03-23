@@ -1,19 +1,31 @@
-import { CustomerPortal } from "@polar-sh/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-export const GET = CustomerPortal({
-  accessToken: process.env.POLAR_ACCESS_TOKEN!,
-  getCustomerId: async (req: NextRequest) => {
-    const { userId } = await auth();
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+export async function GET() {
+  const { userId } = await auth();
 
-    return user.polarCustomerId;
-  },
-  server: "sandbox", // Use sandbox if you're testing Polar - omit the parameter or pass 'production' otherwise
-});
+  if (!userId) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      polarSubscriptionId: true,
+    },
+  });
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const fallbackUrl = `${appUrl}/settings`;
+
+  if (!user?.polarSubscriptionId) {
+    return NextResponse.redirect(fallbackUrl);
+  }
+
+  return NextResponse.redirect(
+    `https://dashboard.razorpay.com/app/subscriptions/${user.polarSubscriptionId}`,
+  );
+}

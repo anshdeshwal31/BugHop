@@ -34,8 +34,8 @@ def _normalize_service_status(ok: bool):
 
 
 async def _check_embedding_service():
-    if not settings.openai_api_key:
-        return False, "OpenAI API key missing"
+    if not settings.google_api_key:
+        return False, "Google API key missing"
 
     try:
         await asyncio.wait_for(embeddings.create_embedding("health-check"), timeout=8)
@@ -57,21 +57,23 @@ def _check_workflow_orchestrator():
 
 
 async def _check_billing_provider():
-    token = os.getenv("POLAR_ACCESS_TOKEN")
-    if not token:
-        return False, "Polar token missing"
+    key_id = os.getenv("RAZORPAY_KEY_ID")
+    key_secret = os.getenv("RAZORPAY_KEY_SECRET")
+    if not key_id or not key_secret:
+        return False, "Razorpay credentials missing"
 
     try:
+        auth = (key_id, key_secret)
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get(
-                "https://api.polar.sh/v1/organizations",
-                headers={"Authorization": f"Bearer {token}"},
+                "https://api.razorpay.com/v1/items?count=1",
+                auth=auth,
             )
 
         if response.status_code < 400:
-            return True, "Polar API reachable"
+            return True, "Razorpay API reachable"
 
-        return False, f"Polar API returned {response.status_code}"
+        return False, f"Razorpay API returned {response.status_code}"
     except Exception as e:
         return False, str(e)
 
@@ -86,7 +88,7 @@ def _build_status_feed(
     billing_ok: bool,
     billing_detail: str,
 ):
-    openai_configured = bool(settings.openai_api_key)
+    google_configured = bool(settings.google_api_key)
 
     services = {
         "backend_api": {
@@ -110,8 +112,8 @@ def _build_status_feed(
             "detail": "Qdrant reachable" if qdrant_ok else (qdrant_error or "Qdrant unavailable"),
         },
         "llm_provider": {
-            "status": _normalize_service_status(openai_configured),
-            "detail": "OpenAI API key configured" if openai_configured else "OpenAI API key missing",
+            "status": _normalize_service_status(google_configured),
+            "detail": "Google API key configured" if google_configured else "Google API key missing",
         },
         "billing_provider": {
             "status": _normalize_service_status(billing_ok),

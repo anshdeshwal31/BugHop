@@ -1,11 +1,12 @@
-from openai import OpenAI
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from app.core.config import settings
 
-client = OpenAI(api_key=settings.openai_api_key)
+embeddings_client = GoogleGenerativeAIEmbeddings(
+    model=settings.embedding_model,
+    google_api_key=settings.google_api_key,
+)
 
 
 async def create_embedding(text):
-    response = client.embeddings.create(input=text, model="text-embedding-3-small")
-    embedding = response.data[0].embedding
-    return embedding
+    return await embeddings_client.aembed_query(text)

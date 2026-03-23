@@ -69,11 +69,7 @@ export default function SettingsPage() {
   }, []);
 
   const handleUpgrade = () => {
-    const productId = process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID;
-    if (!productId) {
-      return;
-    }
-    window.location.href = `/api/polar/checkout?products=${productId}`;
+    window.location.href = "/api/polar/checkout";
   };
 
   const handleManageSubscription = () => {

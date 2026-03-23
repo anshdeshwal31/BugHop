@@ -8,12 +8,13 @@ class Settings(BaseSettings):
     github_private_key: str = ""
     github_webhook_secret: str = ""
 
-    openai_api_key: str = ""
+    google_api_key: str = ""
 
     qdrant_url: str = ""
     qdrant_api_key: str = ""
 
-    llm_model: str = "gpt-5.2"
+    llm_model: str = "gemini-2.5-flash"
+    embedding_model: str = "models/text-embedding-004"
 
     environment: str = "development"
     frontend_url: str = "http://localhost:3000"
