@@ -76,8 +76,44 @@ export default function DashboardPage() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">No data available</p>
+      <div className="max-w-4xl mx-auto">
+        <div className="border border-dashed rounded-xl p-8 bg-muted/30">
+          <h2 className="text-xl font-semibold mb-2">No activity yet</h2>
+          <p className="text-muted-foreground mb-6">
+            Connect a GitHub repo and run your first review to populate your
+            dashboard.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-lg border bg-background p-4">
+              <p className="text-sm font-medium mb-1">1. Connect GitHub</p>
+              <p className="text-xs text-muted-foreground">
+                Install the app and select a repository.
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background p-4">
+              <p className="text-sm font-medium mb-1">2. Start indexing</p>
+              <p className="text-xs text-muted-foreground">
+                Let BugHop learn your codebase structure.
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background p-4">
+              <p className="text-sm font-medium mb-1">3. Run a review</p>
+              <p className="text-xs text-muted-foreground">
+                Open a PR or issue and trigger analysis.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <a
+              href="/settings"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            >
+              Go to Settings
+            </a>
+          </div>
+        </div>
       </div>
     );
   }

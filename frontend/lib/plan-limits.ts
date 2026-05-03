@@ -1,9 +1,9 @@
 export const PLAN_LIMITS = {
   FREE: {
-    prs: 10,
-    prsCreated: 5,
-    issues: 20,
-    chat: 50,
+    prs: 20,
+    prsCreated: 10,
+    issues: 40,
+    chat: 100,
   },
   PRO: {
     prs: 150,

@@ -31,5 +31,6 @@ export default function ChatLoading() {
         <Skeleton className="h-12 w-full rounded-full" />
       </div>
     </div>
+    </div>
   );
 }

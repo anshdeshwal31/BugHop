@@ -140,7 +140,7 @@ async def startup():
 
 @app.get("/")
 def root():
-    return {"message": "coderabbit clone backend"}
+    return {"message": "BugHop backend"}
 
 
 @app.get("/health")

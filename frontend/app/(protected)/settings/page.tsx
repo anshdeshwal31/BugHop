@@ -114,7 +114,7 @@ export default function SettingsPage() {
             prsCreated:usage?.limits[currentPlan].prsCreated ||0,
               issues: usage?.limits[currentPlan].issues ||0,
         chat: usage?.limits[currentPlan].chat ||0}
-        }}
+        }
       />
 
       <GithubCard repoName={repoName} indexingStatus={indexingStatus} />

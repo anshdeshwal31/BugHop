@@ -45,7 +45,7 @@ export function AppSidebar() {
     <aside className="w-64 h-screen sticky top-0 border-r bg-background  flex flex-col">
       <div className="p-4 border-b flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-b from-[#127A4D] to-[#0d5636] flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-b from-[#127A4D] to-[#0d5636] flex items-center justify-center shrink-0">
             <Github className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
@@ -63,7 +63,7 @@ export function AppSidebar() {
               </>
             ) : (
               <>
-                <p className="font-semibold">CodeRabbit</p>
+                <p className="font-semibold">BugHop</p>
                 <p className="text-xs text-muted-foreground">AI Code Reviews</p>
               </>
             )}
@@ -81,7 +81,7 @@ export function AppSidebar() {
                   href={item.url}
                   className={`flex item-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                     isActive
-                      ? "bg-gradient-to-b from-[#127A4D] to-[#0d5636] text-white"
+                      ? "bg-linear-to-b from-[#127A4D] to-[#0d5636] text-white"
                       : "hover:bg-muted"
                   }`}
                 >

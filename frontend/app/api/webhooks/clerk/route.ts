@@ -5,8 +5,21 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    // Verifies webhook authenticity using CLERK_WEBHOOK_SIGNING_SECRET env var
-    const evt = await verifyWebhook(req);
+    const signingSecret = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
+
+    let evt: { type?: string; data?: any };
+    if (signingSecret) {
+      // Verifies webhook authenticity using CLERK_WEBHOOK_SIGNING_SECRET env var
+      evt = await verifyWebhook(req);
+    } else if (process.env.NODE_ENV !== "production") {
+      // Dev fallback when signing secret is not configured
+      evt = await req.json();
+    } else {
+      return new Response(
+        "CLERK_WEBHOOK_SIGNING_SECRET is not configured",
+        { status: 500 },
+      );
+    }
 
     // Access verified event data
     const { type, data } = evt;

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { liveblocks } from "@/lib/liveblocks";
+import { IndexingStatus } from "@prisma/client";
 import { findRepoWithInstallation } from "./repositories";
 
 async function sendNotification(
@@ -23,6 +24,10 @@ export async function logPrReview(
   prGithubId: number,
 ) {
   const repo = await findRepoWithInstallation(repoFullName);
+
+  if (!repo) {
+    throw new Error(`Repository not found for ${repoFullName}`);
+  }
 
   const pr = await prisma.pullRequest.create({
     data: {
@@ -56,6 +61,10 @@ export async function logIssueAnalysis(
 ) {
   const repo = await findRepoWithInstallation(repoFullName);
 
+  if (!repo) {
+    throw new Error(`Repository not found for ${repoFullName}`);
+  }
+
   const issue = await prisma.pullRequest.create({
     data: {
       githubId: BigInt(issueGithubId || 0),
@@ -88,6 +97,10 @@ export async function logPrCreation(
 ) {
   const repo = await findRepoWithInstallation(repoFullName);
 
+  if (!repo) {
+    throw new Error(`Repository not found for ${repoFullName}`);
+  }
+
   await sendNotification(
     repo.installation.userId,
     "$prCreated",
@@ -104,7 +117,10 @@ export async function logPrCreation(
   return { success: true };
 }
 
-export async function logIndexingUpdate(repoFullName: string, status: string) {
+export async function logIndexingUpdate(
+  repoFullName: string,
+  status: IndexingStatus,
+) {
   const repo = await findRepoWithInstallation(repoFullName);
 
   await prisma.repository.updateMany({
@@ -116,7 +132,7 @@ export async function logIndexingUpdate(repoFullName: string, status: string) {
     },
   });
 
-  if (repo && (status === "COMPELETED" || status === "FAILED")) {
+  if (repo && (status === "COMPLETED" || status === "FAILED")) {
     await sendNotification(
       repo.installation.userId,
       "$indexingComplete",

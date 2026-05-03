@@ -83,7 +83,7 @@ export function LogFilters({
           <div>
             <label className="text-sm font-medium block mb-2">Repository</label>
             <Select value={repoFilter} onValueChange={onRepoFilterChange}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-50">
                 <SelectValue placeholder="All Repositories" />
               </SelectTrigger>
               <SelectContent>
@@ -103,7 +103,7 @@ export function LogFilters({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-[150px] justify-start text-left font-normal"
+                  className="w-37.5 justify-start text-left font-normal"
                 >
                   <CalendarIcon className="w-4 h-4 mr-2" />
                   {startDate ? format(startDate, "MMM d, yyyy") : "Pick Date"}
@@ -126,7 +126,7 @@ export function LogFilters({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-[150px] justify-start text-left font-normal"
+                  className="w-37.5 justify-start text-left font-normal"
                 >
                   <CalendarIcon className="w-4 h-4 mr-2" />
                   {endDate ? format(endDate, "MMM d, yyyy") : "Pick Date"}

@@ -1,3 +1,5 @@
+from urllib.parse import urlparse, urlunparse
+
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance,
@@ -11,9 +13,29 @@ from qdrant_client.models import (
 
 from app.core.config import settings
 
-client = QdrantClient(url=settings.qdrant_url, api_key=settings.qdrant_api_key)
+def _normalize_qdrant_url(raw_url: str) -> str:
+    if not raw_url:
+        return raw_url
 
-COLLECTION_NAME = "coderabbit6767"
+    parsed = urlparse(raw_url)
+    if not parsed.scheme or not parsed.netloc:
+        return raw_url
+
+    if parsed.port is not None:
+        return raw_url
+
+    netloc = f"{parsed.hostname}:6333"
+    return urlunparse(
+        (parsed.scheme, netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)
+    )
+
+
+client = QdrantClient(
+    url=_normalize_qdrant_url(settings.qdrant_url),
+    api_key=settings.qdrant_api_key,
+)
+
+COLLECTION_NAME = "bughop"
 
 
 def init_collection():

@@ -3,7 +3,10 @@ import tree_sitter_c
 import tree_sitter_c_sharp
 import tree_sitter_cpp
 import tree_sitter_css
-import tree_sitter_dockerfile
+try:
+    import tree_sitter_dockerfile
+except Exception:
+    tree_sitter_dockerfile = None
 import tree_sitter_go
 import tree_sitter_html
 import tree_sitter_java
@@ -41,8 +44,10 @@ LANGUAGES = {
     "markdown": Language(tree_sitter_markdown.language()),
     "bash": Language(tree_sitter_bash.language()),
     "sql": Language(tree_sitter_sql.language()),
-    "dockerfile": Language(tree_sitter_dockerfile.language()),
 }
+
+if tree_sitter_dockerfile is not None:
+    LANGUAGES["dockerfile"] = Language(tree_sitter_dockerfile.language())
 
 
 EXTENSION_TO_LANGUAGE = {
@@ -78,8 +83,10 @@ EXTENSION_TO_LANGUAGE = {
     ".bash": "bash",
     ".zsh": "bash",
     ".sql": "sql",
-    "Dockerfile": "dockerfile",
 }
+
+if tree_sitter_dockerfile is not None:
+    EXTENSION_TO_LANGUAGE["Dockerfile"] = "dockerfile"
 
 FUNCTION_NODES = {
     "python": ["function_definition"],

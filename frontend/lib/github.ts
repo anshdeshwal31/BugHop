@@ -1,7 +1,7 @@
 import { Webhooks } from "@octokit/webhooks";
 
 const webhooks = new Webhooks({
-  secret: process.env.WEBHOOK_SECRET!,
+  secret: process.env.GITHUB_WEBHOOK_SECRET!,
 });
 
 const handleWebhook = async (req: any, res: any) => {

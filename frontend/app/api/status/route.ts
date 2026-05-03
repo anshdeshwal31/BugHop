@@ -37,7 +37,7 @@ export async function GET() {
     }
 
     const externalResponse = await fetch(
-      "https://allquiet.app/status/coderabbit6767/status.json",
+      "https://allquiet.app/status/bughop/status.json",
       {
         signal: AbortSignal.timeout(5000),
       },

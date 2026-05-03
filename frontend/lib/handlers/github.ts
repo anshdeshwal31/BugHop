@@ -71,7 +71,7 @@ export async function handlePullRequestOpened(payload: any) {
     });
 
     const headBranch = pr.head.ref || "";
-    const isAutoPR = headBranch.startsWith("coderabbit/");
+    const isAutoPR = headBranch.startsWith("bughop/");
 
     if (isAutoPR) {
       const updatesUser = await prisma.user.update({

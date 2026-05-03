@@ -6,7 +6,7 @@ import {
 	handlePullRequestOpened,
 } from "@/lib/handlers/github";
 
-const webhookSecret = process.env.WEBHOOK_SECRET;
+const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
 
 const webhooks = webhookSecret
 	? new Webhooks({
@@ -17,8 +17,9 @@ const webhooks = webhookSecret
 export async function POST(req: NextRequest) {
 	try {
 		if (!webhooks) {
+			console.log("github webhook secret is not configured")
 			return NextResponse.json(
-				{ error: "WEBHOOK_SECRET is not configured" },
+				{ error: "GITHUB_WEBHOOK_SECRET is not configured" },
 				{ status: 500 },
 			);
 		}
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
 
 		return NextResponse.json({ status: "ok" });
 	} catch (error) {
+		console.log({error})
 		return NextResponse.json(
 			{ error: "failed to process webhook" },
 			{ status: 500 },

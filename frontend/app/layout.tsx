@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeRabbit Clone",
+  title: "BugHop",
   description: "AI-powered code reviews for Gi`tHub",
 };
 

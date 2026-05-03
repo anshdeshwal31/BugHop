@@ -85,7 +85,7 @@ export function UsageProvider({ children }: { children: ReactNode }) {
   }, [isSignedIn, isLoaded]);
 
   const canSendMessage = () => {
-    if (!usage) return false;
+    if (!usage) return true;
     const limit = usage.limits[usage.plan].chat;
     return usage.chatMessagesUsed < limit;
   };

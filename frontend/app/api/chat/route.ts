@@ -25,7 +25,13 @@ export async function POST(req: NextRequest) {
     const user = await getUserWithInstallations(userId);
 
     if (!user) {
-      return NextResponse.json({ error: "user not found" }, { status: 404 });
+      return NextResponse.json(
+        {
+          error:
+            "User profile not synced yet. Make sure the Clerk webhook is configured and re-login.",
+        },
+        { status: 404 },
+      );
     }
 
     if (!checkPlanLimit(user.plan, user.chatMessagesUsed, "chat")) {
@@ -37,8 +43,22 @@ export async function POST(req: NextRequest) {
 
     const installation = user.installations[0];
 
+    if (!installation) {
+      return NextResponse.json(
+        { error: "Connect a GitHub repository before using chat" },
+        { status: 400 },
+      );
+    }
+
     const repo = installation.repositories[0];
     const repoFullName = repo?.fullName || null;
+
+    if (!repoFullName) {
+      return NextResponse.json(
+        { error: "Connect a GitHub repository before using chat" },
+        { status: 400 },
+      );
+    }
 
     const backendUrl = process.env.BACKEND_URL;
     const res = await fetch(`${backendUrl}/chat`, {
