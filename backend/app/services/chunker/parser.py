@@ -63,7 +63,8 @@ def chunk_code(code, file_path):
             raise ValueError("Language parser is not configured")
         parser = Parser(lang)
         tree = parser.parse(code.encode("utf-8"))
-    except Exception:
+    except Exception as exc:
+        print(f"Tree-sitter parse failed for {file_path}: {exc}")
         return [
             CodeChunk(
                 content=code,

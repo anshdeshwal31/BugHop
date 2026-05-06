@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useUsage } from "@/components/providers/usage-provider";
 import { useAuthRedirect } from "@/hooks/use-auth-redirect";
@@ -26,27 +26,71 @@ export default function SettingsPage() {
   const [backendStatus, setBackendStatus] = useState<
     "online" | "offline" | "degraded" | "maintenance"
   >("online");
+  const [toast, setToast] = useState<{
+    message: string;
+    tone: "info" | "success" | "error";
+  } | null>(null);
+  const lastIndexingStatusRef = useRef<string | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [uptime, setUptime] = useState<number | null>(null);
   const [services, setServices] = useState<Record<string, ServiceStatus>>({});
 
   useEffect(() => {
+    const showToast = (message: string, tone: "info" | "success" | "error") => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+      setToast({ message, tone });
+      toastTimerRef.current = setTimeout(() => setToast(null), 4000);
+    };
+
+    const handleIndexingStatus = (nextStatus: string | null) => {
+      const prevStatus = lastIndexingStatusRef.current;
+      lastIndexingStatusRef.current = nextStatus;
+
+      if (!prevStatus || !nextStatus || prevStatus === nextStatus) {
+        return;
+      }
+
+      if (nextStatus === "INDEXING") {
+        showToast("Indexing started", "info");
+      } else if (nextStatus === "COMPLETED") {
+        showToast("Indexing completed", "success");
+      } else if (nextStatus === "FAILED") {
+        showToast("Indexing failed", "error");
+      }
+    };
+
     const fetchRepo = async () => {
       try {
         const res = await fetch("/api/dashboard");
         if (res.ok) {
           const data = await res.json();
-          setRepoName(data.stats?.repoName || null);
-          setIndexingStatus(data.stats?.indexingStatus || null);
+          const repo = data.stats?.repoName || null;
+          const status = data.stats?.indexingStatus || null;
+          setRepoName(repo);
+          setIndexingStatus(status);
+          handleIndexingStatus(status);
         }
       } catch (error) {
         console.error("error fetchiug repo:", error);
       }
     };
 
-    if (isSignedIn) {
-      fetchRepo();
+    if (!isSignedIn) {
+      return;
     }
+
+    fetchRepo();
+    const intervalId = setInterval(fetchRepo, 8000);
+
+    return () => {
+      clearInterval(intervalId);
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
   }, [isSignedIn]);
 
   useEffect(() => {
@@ -85,6 +129,21 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {toast && (
+        <div className="fixed right-4 top-4 z-50">
+          <div
+            className={`rounded-lg border px-4 py-3 text-sm shadow-lg ${
+              toast.tone === "success"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : toast.tone === "error"
+                  ? "border-red-200 bg-red-50 text-red-800"
+                  : "border-slate-200 bg-white text-slate-700"
+            }`}
+          >
+            {toast.message}
+          </div>
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-2xl font-bold">Settings</h1>
         <p className="text-muted-foreground">

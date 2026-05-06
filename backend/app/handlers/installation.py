@@ -8,6 +8,10 @@ async def handle_installation(payload):
     account = payload["installation"]["account"]["login"]
     repositories = payload.get("repositories", [])
 
+    if not repositories:
+        print("Installation payload contains no repositories; skipping indexing trigger.")
+        return
+
     repo_name = repositories[0]["name"]
     try:
         await inngest_client.send(

@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
     }
 
     const rule = await createRule(user.id, content);
+
+    return NextResponse.json({ rule });
   } catch (error) {
     return NextResponse.json(
       { error: "internal server used" },

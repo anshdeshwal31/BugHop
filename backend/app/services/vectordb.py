@@ -42,10 +42,10 @@ def init_collection():
     try:
         client.create_collection(
             collection_name=COLLECTION_NAME,
-            vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=settings.embedding_dim, distance=Distance.COSINE),
         )
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"Qdrant create_collection failed: {exc}")
 
     try:
         client.create_payload_index(
@@ -53,12 +53,22 @@ def init_collection():
             field_name="repo",
             field_schema=PayloadSchemaType.KEYWORD,
         )
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"Qdrant create_payload_index failed: {exc}")
 
 
 def upsert_embeddings(points):
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
+    if not points:
+        return
+
+    batch_size = max(1, settings.qdrant_upsert_batch_size)
+    for i in range(0, len(points), batch_size):
+        batch = points[i : i + batch_size]
+        client.upsert(
+            collection_name=COLLECTION_NAME,
+            points=batch,
+            timeout=settings.qdrant_timeout_seconds,
+        )
 
 
 async def search(embedding, repo, limit=5):

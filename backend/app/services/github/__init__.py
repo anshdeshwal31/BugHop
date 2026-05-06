@@ -1,8 +1,10 @@
 from .auth import get_installation_token
 from .repos import (
+    iter_repo_files,
     get_repo_files,
     get_file_content,
     get_default_branch,
+    get_repo_metadata,
 )
 from .pulls import (
     get_pr_diff,

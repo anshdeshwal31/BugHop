@@ -59,7 +59,24 @@ async def log_pr_creation(
     )
 
 
-async def update_indexing_status(repo_full_name, status):
-    await post(
-        "/api/indexing/update", {"repoFullName": repo_full_name, "status": status}
-    )
+async def update_indexing_status(
+    repo_full_name,
+    status,
+    *,
+    installation_id=None,
+    repo_github_id=None,
+    repo_name=None,
+):
+    payload = {
+        "repoFullName": repo_full_name,
+        "status": status,
+    }
+
+    if installation_id is not None:
+        payload["installationId"] = installation_id
+    if repo_github_id is not None:
+        payload["repoGithubId"] = repo_github_id
+    if repo_name:
+        payload["repoName"] = repo_name
+
+    await post("/api/indexing/update", payload)

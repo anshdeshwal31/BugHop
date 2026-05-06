@@ -1,7 +1,9 @@
+import asyncio
 import base64
 
 import httpx
 
+from app.core.config import settings
 from app.services.github.client import GITHUB_API, github_request
 
 SKIP_FILES = {
@@ -106,8 +108,9 @@ def should_skip_file(path, content_size):
     return False
 
 
-async def get_repo_files(owner, repo, token):
-    files = []
+async def iter_repo_files(owner, repo, token):
+    max_files = settings.github_max_files
+    files_seen = 0
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
@@ -115,31 +118,58 @@ async def get_repo_files(owner, repo, token):
 
     async with httpx.AsyncClient(base_url=GITHUB_API) as client:
 
+        async def _get(url):
+            for attempt in range(1, 4):
+                try:
+                    resp = await client.get(
+                        url,
+                        headers=headers,
+                        timeout=settings.github_timeout_seconds,
+                    )
+                    resp.raise_for_status()
+                    return resp
+                except (httpx.TimeoutException, httpx.ConnectError):
+                    if attempt == 3:
+                        print(f"GitHub request timed out after retries: {url}")
+                        return None
+                    await asyncio.sleep(0.6 * attempt)
+
         async def fetch_directory(path=""):
+            nonlocal files_seen
             if path:
                 dir_name = path.split("/")[-1].lower()
                 if dir_name in SKIP_DIRS:
                     return
-            resp = await client.get(
-                f"/repos/{owner}/{repo}/contents/{path}", headers=headers
-            )
+            resp = await _get(f"/repos/{owner}/{repo}/contents/{path}")
+            if resp is None:
+                return
             items = resp.json()
 
             for item in items:
+                if max_files and files_seen >= max_files:
+                    return
                 if item["type"] == "file":
                     if should_skip_file(item["path"], item.get("size", 0)):
                         continue
-                    file_resp = await client.get(item["url"], headers=headers)
+                    file_resp = await _get(item["url"])
+                    if file_resp is None:
+                        continue
                     file_data = file_resp.json()
 
                     content = base64.b64decode(file_data["content"]).decode("utf-8")
-                    files.append({"path": item["path"], "content": content})
+                    files_seen += 1
+                    yield {"path": item["path"], "content": content}
 
                 elif item["type"] == "dir":
-                    await fetch_directory(item["path"])
+                    async for entry in fetch_directory(item["path"]):
+                        yield entry
 
-        await fetch_directory()
-    return files
+        async for entry in fetch_directory():
+            yield entry
+
+
+async def get_repo_files(owner, repo, token):
+    return [entry async for entry in iter_repo_files(owner, repo, token)]
 
 
 async def get_file_content(owner, repo, path, token, ref=None):
@@ -160,3 +190,17 @@ async def get_default_branch(owner, repo, token):
     resp = await github_request("GET", f"/repos/{owner}/{repo}", token)
 
     return resp.json()["default_branch"]
+
+
+async def get_repo_metadata(owner, repo, token):
+    resp = await github_request(
+        "GET",
+        f"/repos/{owner}/{repo}",
+        token,
+        timeout=settings.github_timeout_seconds,
+    )
+    if resp.status_code >= 400:
+        raise RuntimeError(
+            f"Failed to fetch repo metadata ({resp.status_code}): {resp.text}"
+        )
+    return resp.json()
