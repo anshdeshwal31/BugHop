@@ -80,11 +80,19 @@ async def handle_auto_pr(ctx: inngest.Context):
         current_content = file_contents.get(file_path)
 
         if action == "modify" and not current_content:
-            file_data = await github.get_file_content(
-                owner, repo_name, file_path, token
-            )
-            current_content = file_data["content"]
-            file_shas[file_path] = file_data["sha"]
+            try:
+                file_data = await github.get_file_content(
+                    owner, repo_name, file_path, token
+                )
+                current_content = file_data["content"]
+                file_shas[file_path] = file_data["sha"]
+            except Exception as e:
+                if "404" in str(e):
+                    print(f"File {file_path} not found for modification. Falling back to create.")
+                    action = "create"
+                    current_content = ""
+                else:
+                    raise
 
         new_content = await llm.generate_file_change(
             file_path=file_path,

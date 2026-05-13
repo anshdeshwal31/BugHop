@@ -4,18 +4,25 @@ from app.core.config import settings
 
 
 async def post(endpoint, data):
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         await client.post(f"{settings.frontend_url}{endpoint}", json=data, timeout=10.0)
 
 
 async def fetch_custom_rules(installation_id):
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(follow_redirects=True) as client:
         resp = await client.get(
             f"{settings.frontend_url}/api/rules/by-installation/{installation_id}",
             timeout=10.0,
         )
 
-        return resp.json().get("rules", [])
+        try:
+            return resp.json().get("rules", [])
+        except Exception:
+            print(
+                f"fetch_custom_rules: could not parse response "
+                f"(status={resp.status_code}): {resp.text[:200]}"
+            )
+            return []
 
 
 async def log_pr_review(repo_full_name, pr_number, pr_title, pr_github_id):

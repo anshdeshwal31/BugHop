@@ -2,16 +2,65 @@ import json
 import re
 
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 
 from app.core.config import settings
 
-MODEL = settings.llm_model
-llm = ChatGoogleGenerativeAI(
-    model=MODEL,
-    temperature=0.2,
-    max_retries=2,
-    google_api_key=settings.google_api_key,
-)
+# ---------------------------------------------------------------------------
+# Provider chain: primary → fallbacks in order
+# ---------------------------------------------------------------------------
+def _build_providers():
+    providers = []
+
+    # Primary: Google Gemini
+    if settings.google_api_key:
+        providers.append(
+            (
+                f"Google/{settings.llm_model}",
+                ChatGoogleGenerativeAI(
+                    model=settings.llm_model,
+                    temperature=0.2,
+                    max_retries=0,          # we handle retries ourselves
+                    google_api_key=settings.google_api_key,
+                ),
+            )
+        )
+
+    # Fallbacks: Groq models (only if key is configured)
+    if settings.groq_api_key:
+        for groq_model in [
+            "llama-3.3-70b-versatile",
+            "deepseek-r1-distill-llama-70b",
+            "mixtral-8x7b-32768",
+        ]:
+            providers.append(
+                (
+                    f"Groq/{groq_model}",
+                    ChatGroq(
+                        model=groq_model,
+                        temperature=0.2,
+                        max_retries=0,
+                        api_key=settings.groq_api_key,
+                    ),
+                )
+            )
+
+    return providers
+
+
+_PROVIDERS = _build_providers()
+
+
+def _should_fallback(exc: Exception) -> bool:
+    """Return True if the error is a rate-limit or server error (fallback-worthy)."""
+    msg = str(exc).lower()
+    # 429 / rate-limit patterns (Google SDK uses RESOURCE_EXHAUSTED)
+    if "429" in msg or "resource_exhausted" in msg or "quota" in msg:
+        return True
+    # Any 5xx server error
+    if any(f"{code}" in msg for code in range(500, 600)):
+        return True
+    return False
 
 
 def _extract_text(response):
@@ -34,18 +83,33 @@ def _extract_text(response):
     return str(content)
 
 
-async def _invoke_text(prompt, temperature=0.2):
-    model = llm
-    if temperature != 0.2:
-        model = ChatGoogleGenerativeAI(
-            model=MODEL,
-            temperature=temperature,
-            max_retries=2,
-            google_api_key=settings.google_api_key,
-        )
+async def _invoke_text(prompt, temperature=0.2) -> str:
+    last_exc: Exception | None = None
 
-    response = await model.ainvoke(prompt)
-    return _extract_text(response)
+    for name, model in _PROVIDERS:
+        # Re-instantiate with custom temperature only when it differs from default
+        active = model
+        if temperature != 0.2:
+            active = model.__class__(
+                **{**model.__dict__.get("_lc_kwargs", {}), "temperature": temperature}
+            )
+
+        try:
+            print(f"[LLM] Using provider: {name}")
+            response = await active.ainvoke(prompt)
+            return _extract_text(response)
+        except Exception as exc:
+            if _should_fallback(exc):
+                print(f"[LLM] Fallback triggered from {name}: {exc}")
+                last_exc = exc
+                continue
+            # Non-retriable error (4xx other than 429) — raise immediately
+            raise
+
+    raise RuntimeError(
+        f"All LLM providers failed. Last error: {last_exc}"
+    ) from last_exc
+
 
 
 def _clean_json_response(content: str) -> str:

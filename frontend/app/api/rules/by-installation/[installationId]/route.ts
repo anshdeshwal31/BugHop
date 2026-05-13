@@ -6,32 +6,38 @@ export async function GET(
   { params }: { params: Promise<{ installationId: string }> },
 ) {
   try {
-    const { installationId } = await params
-    const installationIdNum = parseInt(installationId)
+    const { installationId } = await params;
+    const installationIdNum = parseInt(installationId);
 
     const installation = await prisma.installation.findUnique({
       where: {
-        installationId: installationIdNum
+        installationId: installationIdNum,
       },
       include: {
         user: {
           include: {
             rules: {
-              order: {
-                createdAt: "asc"
-    }
-    }
-    }
-    }
-    }
-    })
+              orderBy: {       // Bug 1 fixed: was "order" (invalid Prisma field)
+                createdAt: "asc",
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const rules = installation.user.rules.map((rule) => rule.content)
+    if (!installation) {      // Bug 2 fixed: null check before accessing .user.rules
+      return NextResponse.json({ rules: [] });
+    }
 
-    return NextResponse.json({rules})
-  }catch (error) {
+    const rules = installation.user.rules.map((rule) => rule.content);
+
+    return NextResponse.json({ rules });
+  } catch (error) {           // Bug 3 fixed: missing closing ) on NextResponse.json(...)
+    console.error("Error fetching rules by installation:", error);
     return NextResponse.json(
-      { error: "internal server used" },
+      { error: "internal server error" },
       { status: 500 },
+    );
   }
 }

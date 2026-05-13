@@ -12,6 +12,11 @@ async def handle_pull_request(payload):
     title = pr["title"]
     description = pr.get("body", "") or ""
 
+    # Do not review PRs created by bots (including our own Auto-PRs)
+    if pr.get("user", {}).get("type") == "Bot":
+        print(f"Skipping PR review for #{pr_number}: Created by a Bot ({pr.get('user', {}).get('login')})")
+        return
+
     token = await github.get_installation_token(installation_id)
 
     diff = await github.get_pr_diff(owner, repo_name, pr_number, token)

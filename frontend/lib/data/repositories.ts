@@ -21,21 +21,27 @@ export async function upsertRepository(
   fullName: string,
   installationId: string,
 ) {
-  return prisma.repository.upsert({
-    where: {
-      githubId,
-    },
-    create: {
-      githubId,
-      name,
-      fullName,
-      installationId,
-    },
-    update: {
-      name,
-      fullName,
-    },
-  });
+  try {
+    
+    return prisma.repository.upsert({
+      where: {
+        githubId,
+      },
+      create: {
+        githubId,
+        name,
+        fullName,
+        installationId,
+      },
+      update: {
+        name,
+        fullName,
+      },
+    });
+    console.log("repository upserted in db successfully")
+  } catch (error) {
+    console.log({error})
+  }
 }
 
 export async function updateIndexingStatus(

@@ -40,6 +40,9 @@ COLLECTION_NAME = "bughop"
 
 def init_collection():
     try:
+        if client.collection_exists(collection_name=COLLECTION_NAME):
+            return
+
         client.create_collection(
             collection_name=COLLECTION_NAME,
             vectors_config=VectorParams(size=settings.embedding_dim, distance=Distance.COSINE),

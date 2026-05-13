@@ -7,7 +7,7 @@ import httpx
 import uvicorn
 
 from app.core.config import settings
-from app.routers import webhooks, chat
+from app.routers import webhooks, chat, installation
 from app.services import embeddings
 from app.services.vectordb import init_collection, get_client
 
@@ -27,6 +27,7 @@ app.add_middleware(
 
 app.include_router(webhooks.router, tags=["webhooks"])
 app.include_router(chat.router, tags=["chat"])
+app.include_router(installation.router, tags=["installation"])
 
 
 def _normalize_service_status(ok: bool):

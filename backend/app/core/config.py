@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     github_max_files: int = 0
 
     google_api_key: str = ""
+    groq_api_key: str = ""
 
     qdrant_url: str = ""
     qdrant_api_key: str = ""
