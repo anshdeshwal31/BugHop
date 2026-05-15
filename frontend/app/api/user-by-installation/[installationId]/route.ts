@@ -10,7 +10,7 @@ export async function GET(
 
     const installation = await prisma.installation.findUnique({
       where: {
-        installationId: installationId,
+        installationId: parseInt(installationId, 10),
       },
       select: {
         userId: true,
