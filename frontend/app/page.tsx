@@ -1,6 +1,7 @@
 "use client";
 
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
+import { AppFooter } from "@/components/layout/app-footer";
 
 const problemCards = [
   {
@@ -290,12 +291,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 py-10">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-white/45 text-xs uppercase tracking-[0.25em] rig-mono">
-          <span>BugHop</span>
-          <span>© {new Date().getFullYear()} BugHop. All rights reserved.</span>
-        </div>
-      </footer>
+      <AppFooter />
     </div>
   );
 }

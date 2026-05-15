@@ -94,7 +94,7 @@ export function SubscriptionCard({ isPro }: SubscriptionCardProps) {
             </ul>
             <div className="mt-4 rounded-xl bg-[#1b1111] border border-white/[0.12] px-3 py-2">
               <p className="text-xs text-[#e7d6cb] font-medium">
-                🚀 Paid billing is coming soon. We&apos;ll notify you when it launches!
+                Paid billing is coming soon. We&apos;ll notify you when it launches!
               </p>
             </div>
           </div>

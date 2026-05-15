@@ -7,13 +7,7 @@ import { useAuthRedirect } from "@/hooks/use-auth-redirect";
 import { AccountCard } from "./_components/account-card";
 import { UsageCard } from "./_components/usage-card";
 import { GithubCard } from "./_components/github-card";
-import { SystemStatusCard } from "./_components/system-status-card";
 import SettingsLoading from "./loading";
-
-type ServiceStatus = {
-  status?: string;
-  detail?: string;
-};
 
 export default function SettingsPage() {
   const { isSignedIn, isLoaded } = useAuthRedirect();
@@ -22,9 +16,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [repoName, setRepoName] = useState<string | null>(null);
   const [indexingStatus, setIndexingStatus] = useState<string | null>(null);
-  const [backendStatus, setBackendStatus] = useState<
-    "online" | "offline" | "degraded" | "maintenance"
-  >("online");
+
   const [toast, setToast] = useState<{
     message: string;
     tone: "info" | "success" | "error";
@@ -32,8 +24,7 @@ export default function SettingsPage() {
   const lastIndexingStatusRef = useRef<string | null>(null);
   const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [uptime, setUptime] = useState<number | null>(null);
-  const [services, setServices] = useState<Record<string, ServiceStatus>>({});
+
 
   useEffect(() => {
     const showToast = (message: string, tone: "info" | "success" | "error") => {
@@ -92,24 +83,7 @@ export default function SettingsPage() {
     };
   }, [isSignedIn]);
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch("/api/status");
-        const data = await res.json();
-        setBackendStatus(data.status || "offline");
-        if (data.uptime != null) {
-          setUptime(data.uptime);
-        }
-        if (data.services && typeof data.services === "object") {
-          setServices(data.services);
-        }
-      } catch {
-        setBackendStatus("offline");
-      }
-    };
-    fetchStatus();
-  }, []);
+
 
   if (!isLoaded || usageLoading) {
     return <SettingsLoading />;
@@ -162,11 +136,7 @@ export default function SettingsPage() {
       />
 
       <GithubCard repoName={repoName} indexingStatus={indexingStatus} />
-      <SystemStatusCard
-        backendStatus={backendStatus}
-        uptime={uptime}
-        services={services}
-      />
+
     </div>
   );
 }
