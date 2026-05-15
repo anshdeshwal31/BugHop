@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { IndexingStatus } from "@prisma/client";
 
 export async function findRepoWithInstallation(repoFullName: string) {
   return prisma.repository.findFirst({
@@ -46,7 +47,7 @@ export async function upsertRepository(
 
 export async function updateIndexingStatus(
   repoFullName: string,
-  status: string,
+  status: IndexingStatus,
 ) {
   return prisma.repository.updateMany({
     where: {

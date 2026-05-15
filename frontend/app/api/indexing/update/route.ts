@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { updateIndexingStatus, upsertRepository } from "@/lib/data/repositories";
+import { IndexingStatus } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
 	try {
 		const { repoFullName, status, installationId, repoGithubId, repoName } =
 			await req.json();
 
-		if (!repoFullName || !status) {
+		const indexingStatus =
+			typeof status === "string" &&
+			Object.values(IndexingStatus).includes(status as IndexingStatus)
+				? (status as IndexingStatus)
+				: null;
+
+		if (!repoFullName || !indexingStatus) {
 			return NextResponse.json(
-				{ error: "missing required fields" },
+				{ error: "missing or invalid required fields" },
 				{ status: 400 },
 			);
 		}
@@ -32,7 +39,7 @@ export async function POST(req: NextRequest) {
 			}
 		}
 
-		await updateIndexingStatus(repoFullName, status);
+		await updateIndexingStatus(repoFullName, indexingStatus);
 
 		return NextResponse.json({ success: true });
 	} catch (error) {

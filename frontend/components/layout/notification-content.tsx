@@ -16,10 +16,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 
+type NotificationActivityData = Record<
+  string,
+  string | number | boolean | undefined
+>;
+
 export function NotificationContent() {
   const { inboxNotifications } = useInboxNotifications();
   const { count } = useUnreadInboxNotificationsCount();
   const markAllAsRead = useMarkAllInboxNotificationsAsRead();
+
+  const getActivityData = (notification: (typeof inboxNotifications)[0]) => {
+    if ("activities" in notification && notification.activities.length > 0) {
+      return notification.activities[0].data as NotificationActivityData;
+    }
+
+    return undefined;
+  };
 
   if (inboxNotifications.length === 0) {
     return (
@@ -49,8 +62,8 @@ export function NotificationContent() {
     notification: (typeof inboxNotifications)[0],
   ) => {
     const kind = notification.kind;
-    const activity = notification.activites.data;
-    const url = activity.url;
+    const activity = getActivityData(notification);
+    const url = typeof activity?.url === "string" ? activity.url : undefined;
 
     switch (kind) {
       case "$prReviewed":
@@ -58,7 +71,9 @@ export function NotificationContent() {
           icon: <GitPullRequest className="w-4 h-4 text-[#127A4D]" />,
           iconBg: "bg-[#127A4D]/10",
           title: "PR Reviewed",
-          description: `PR #${activity.prNumber} in ${activity.repoName}`,
+          description: `PR #${activity?.prNumber ?? "?"} in ${
+            activity?.repoName ?? "Unknown repo"
+          }`,
           url,
         };
       case "$issueAnalyzed":
@@ -66,7 +81,9 @@ export function NotificationContent() {
           icon: <MessageSquare className="w-4 h-4 text-[#127A4D]" />,
           iconBg: "bg-[#127A4D]/10",
           title: "Issue Analyzed",
-          description: `Issue #${activity.issueNumber} in ${activity.repoName}`,
+          description: `Issue #${activity?.issueNumber ?? "?"} in ${
+            activity?.repoName ?? "Unknown repo"
+          }`,
           url,
         };
       case "$prCreated":
@@ -74,11 +91,13 @@ export function NotificationContent() {
           icon: <GitPullRequest className="w-4 h-4 text-[#127A4D]" />,
           iconBg: "bg-[#127A4D]/10",
           title: "Auto-PR Created",
-          description: `PR #${activity.prNumber} in ${activity.repoName}`,
+          description: `PR #${activity?.prNumber ?? "?"} in ${
+            activity?.repoName ?? "Unknown repo"
+          }`,
           url,
         };
       case "$indexingComplete":
-        const isCompleted = activity.status === "completed";
+        const isCompleted = activity?.status === "completed";
 
         return {
           icon: isCompleted ? (
@@ -87,8 +106,8 @@ export function NotificationContent() {
             <X className="w-4 h-4 text-[#127A4D]" />
           ),
           iconBg: isCompleted ? "bg-[#127A4D]/10" : "bg-red-500/10",
-          title: isCompleted ? "Indexing Completed idiot" : "Indexing failed",
-          description: `${activity.repoName}`,
+          title: isCompleted ? "Indexing Completed" : "Indexing failed",
+          description: `${activity?.repoName ?? "Unknown repo"}`,
           url,
         };
 

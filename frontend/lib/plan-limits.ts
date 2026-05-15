@@ -17,5 +17,3 @@ export const PLAN_LIMITS: Record<
     chat: 1000,
   },
 };
-
-export type PlanType = keyof typeof PLAN_LIMITS;

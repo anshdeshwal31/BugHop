@@ -17,7 +17,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ userId: installation.userId });
+    return NextResponse.json({ userId: installation?.userId });
   } catch (error) {
     return NextResponse.json(
       { error: "error fetching user by intallationID" },

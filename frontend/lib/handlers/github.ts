@@ -71,12 +71,27 @@ export async function handlePullRequestOpened(payload: any) {
       },
     });
 
+    if (!installation) {
+      console.error("Installation not found for pull request", {
+        installationId,
+      });
+      return;
+    }
+
     const repository = await upsertRepository(
       BigInt(repo.id),
       repo.name,
       repo.full_name,
-      installation!.id,
+      installation.id,
     );
+
+    if (!repository) {
+      console.error("Failed to upsert repository for pull request", {
+        repoId: repo.id,
+        repoFullName: repo.full_name,
+      });
+      return;
+    }
 
     await prisma.pullRequest.create({
       data: {
@@ -93,7 +108,7 @@ export async function handlePullRequestOpened(payload: any) {
     if (isAutoPR) {
       const updatesUser = await prisma.user.update({
         where: {
-          id: installation!.userId,
+          id: installation.userId,
         },
         data: {
           prsCreated: {
