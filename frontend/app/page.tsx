@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import { AppFooter } from "@/components/layout/app-footer";
 import { Bug } from "lucide-react";
@@ -68,13 +66,6 @@ const benefits = [
 
 export default function Home() {
   const { isSignedIn, isLoaded } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      router.push("/dashboard");
-    }
-  }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded) {
     return (
