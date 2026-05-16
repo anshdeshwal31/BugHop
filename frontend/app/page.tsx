@@ -113,12 +113,12 @@ export default function Home() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-20 sm:pt-28 sm:pb-24 relative z-10">
             <div className="rig-tag rig-mono">Introducing BugHop</div>
             <h1 className="rig-hero-title font-display mt-8">
-              Autonomous AI code review.
+              Autonomous AI code review
               <br />
-              Ship with confidence, faster.
+              & issue fixing.
             </h1>
             <p className="rig-hero-sub mt-6">
-              BugHop reviews every PR and issue the moment it opens. Get consistent standards, contextual findings, and safer releases without slowing the team.
+              BugHop reviews PRs, fixes issues, and generates PRs automatically. Get consistent standards, contextual findings, and safer releases without slowing the team.
             </p>
             <div className="rig-hero-actions">
               {isSignedIn ? (
@@ -146,9 +146,10 @@ export default function Home() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
             <div className="rig-ticker rig-mono">
               <span>PR Review Agent</span>
+              <span>Issue Fixer</span>
+              <span>Auto PR Generation</span>
               <span>GitHub Native</span>
               <span>Contextual Findings</span>
-              <span>Custom Review Rules</span>
               <span>Codebase Chat</span>
             </div>
           </div>
@@ -221,7 +222,7 @@ export default function Home() {
               Own every review.
             </h2>
             <p className="rig-section-sub mt-6 mx-auto">
-              BugHop indexes your repo, understands context, and posts actionable findings directly on PRs and issues.
+              BugHop indexes your repo, understands context, fixes issues, and generates PRs with actionable findings.
             </p>
             <div className="rig-diagram">
               <div className="rig-diagram-line" />
@@ -283,7 +284,7 @@ export default function Home() {
               )}
             </div>
             <p className="mt-5 text-xs uppercase tracking-[0.3em] text-white/40 rig-mono">
-              {isSignedIn ? "Live now in your workspace." : "Autonomous code review for your team."}
+              {isSignedIn ? "Live now in your workspace." : "Autonomous code review & issue fixing for your team."}
             </p>
           </div>
         </section>
